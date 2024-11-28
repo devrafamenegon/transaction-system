@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, VersionColumn } from "typeorm";
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  VersionColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from "typeorm";
 
 @Entity("accounts")
 export class Account {
@@ -14,9 +21,9 @@ export class Account {
   @VersionColumn()
   version: number;
 
-  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
+  @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
+  @UpdateDateColumn()
   updatedAt: Date;
 }
