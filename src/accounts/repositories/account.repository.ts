@@ -1,14 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { Repository, DataSource } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Account } from '../entities/account.entity';
+import { Injectable } from "@nestjs/common";
+import { Repository, DataSource } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Account } from "../entities/account.entity";
 
 @Injectable()
 export class AccountRepository {
   constructor(
     @InjectRepository(Account)
     private readonly repository: Repository<Account>,
-    private readonly dataSource: DataSource,
+    private readonly dataSource: DataSource
   ) {}
 
   async findByNumber(accountNumber: string): Promise<Account | null> {
@@ -32,7 +32,11 @@ export class AccountRepository {
     return this.repository.save(account);
   }
 
-  async updateBalance(accountId: string, amount: number, isDebit: boolean): Promise<Account> {
+  async updateBalance(
+    accountId: string,
+    amount: number,
+    isDebit: boolean
+  ): Promise<Account> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -40,17 +44,19 @@ export class AccountRepository {
     try {
       const account = await queryRunner.manager.findOne(Account, {
         where: { id: accountId },
-        lock: { mode: 'pessimistic_write' },
+        // lock: { mode: "pessimistic_write" }  TODO: activate to production
       });
 
       if (!account) {
-        throw new Error('Account not found');
+        throw new Error("Account not found");
       }
 
-      account.balance = isDebit ? account.balance - amount : account.balance + amount;
+      account.balance = isDebit
+        ? account.balance - amount
+        : account.balance + amount;
       const savedAccount = await queryRunner.manager.save(account);
       await queryRunner.commitTransaction();
-      
+
       return savedAccount;
     } catch (error) {
       await queryRunner.rollbackTransaction();
