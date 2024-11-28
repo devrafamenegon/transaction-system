@@ -1,7 +1,11 @@
 {
-  "name": "bank-system",
+  "name": "transaction-system",
   "version": "1.0.0",
   "description": "Bank transaction system with NestJS",
+  "author": {
+    "name": "Rafael Henrique Menegon",
+    "email": "dev.rafaelmenegon@gmail.com"
+  },
   "private": true,
   "scripts": {
     "build": "nest build",
