@@ -10,7 +10,7 @@ import { AccountsModule } from "./accounts/accounts.module";
     }),
     TypeOrmModule.forRoot({
       type: "sqlite",
-      database: "data",
+      database: "data.sqlite",
       entities: [__dirname + "/**/*.entity{.ts,.js}"],
       synchronize: true,
     }),
