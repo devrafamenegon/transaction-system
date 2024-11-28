@@ -5,7 +5,7 @@ import {
   ManyToOne,
   CreateDateColumn,
 } from "typeorm";
-import { Account } from "../../../accounts/entities/account.entity";
+import { Account } from "../../accounts/entities/account.entity";
 
 export enum TransactionType {
   DEPOSIT = "deposit",

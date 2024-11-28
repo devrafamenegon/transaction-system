@@ -6,9 +6,11 @@ import {
 import { DataSource } from "typeorm";
 import { Transaction, TransactionType } from "./entities/transaction.entity";
 import { CreateTransactionDto } from "./dto/create-transaction.dto";
+import { AccountsService } from "../accounts/accounts.service";
 import { TransactionRepository } from "./repositories/transaction.repository";
-import { AccountRepository } from "../../accounts/repositories/account.repository";
-import { AccountsService } from "../../accounts/accounts.service";
+import { AccountRepository } from "../accounts/repositories/account.repository";
+import { TransactionLogsService } from "../transaction-logs/transaction-logs.service";
+import { LogStatus } from "../transaction-logs/entities/transaction-log.entity";
 
 @Injectable()
 export class TransactionsService {
@@ -16,6 +18,7 @@ export class TransactionsService {
     private readonly transactionRepository: TransactionRepository,
     private readonly accountRepository: AccountRepository,
     private readonly accountsService: AccountsService,
+    private readonly transactionLogsService: TransactionLogsService,
     private readonly dataSource: DataSource
   ) {}
 
@@ -46,6 +49,9 @@ export class TransactionsService {
           throw new NotFoundException("Destination account not found");
         }
       }
+
+      const previousSourceBalance = sourceAccount.balance;
+      let previousDestBalance = destinationAccount?.balance;
 
       // Validate balance for withdrawals and transfers
       if (
@@ -95,10 +101,53 @@ export class TransactionsService {
         description: createTransactionDto.description,
       });
 
+      // Create transaction logs
+      const updatedSourceAccount = await this.accountsService.findById(
+        sourceAccount.id
+      );
+      await this.transactionLogsService.createLog(
+        transaction,
+        sourceAccount,
+        previousSourceBalance,
+        updatedSourceAccount.balance,
+        LogStatus.SUCCESS
+      );
+
+      if (destinationAccount) {
+        const updatedDestAccount = await this.accountsService.findById(
+          destinationAccount.id
+        );
+        await this.transactionLogsService.createLog(
+          transaction,
+          destinationAccount,
+          previousDestBalance!,
+          updatedDestAccount.balance,
+          LogStatus.SUCCESS
+        );
+      }
+
       await queryRunner.commitTransaction();
       return transaction;
     } catch (err) {
       await queryRunner.rollbackTransaction();
+
+      // Log failed transaction
+      if (err instanceof Error) {
+        const sourceAccount = await this.accountsService.findById(
+          createTransactionDto.sourceAccountId
+        );
+        const transaction =
+          await this.transactionRepository.create(createTransactionDto);
+        await this.transactionLogsService.createLog(
+          transaction,
+          sourceAccount,
+          sourceAccount.balance,
+          sourceAccount.balance,
+          LogStatus.FAILED,
+          err.message
+        );
+      }
+
       throw err;
     } finally {
       await queryRunner.release();
