@@ -6,6 +6,7 @@ import { TransactionsModule } from "./transactions/transactions.module";
 import { TransactionLogsModule } from "./transaction-logs/transaction-logs.module";
 import { AuthModule } from "./auth/auth.module";
 import { appConfig, databaseConfig, authConfig } from "./common/config";
+import { LoggerModule } from "./common/logger/logger.module";
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { appConfig, databaseConfig, authConfig } from "./common/config";
         synchronize: process.env.NODE_ENV === "development",
       }),
     }),
+    LoggerModule,
     AccountsModule,
     TransactionsModule,
     TransactionLogsModule,
