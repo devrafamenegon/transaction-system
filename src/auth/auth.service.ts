@@ -28,6 +28,10 @@ export class AuthService {
       );
 
       if (existingUser) {
+        this.logger.warn(
+          `Registration failed: Email ${registerDto.email} already exists`,
+          "AuthService"
+        );
         throw new UserAlreadyExistsException(registerDto.email);
       }
 

@@ -21,7 +21,6 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get("me")
-  @Roles("user", "admin")
   @ApiOperation({ summary: "Get current user profile" })
   @ApiResponse({
     status: 200,
@@ -29,7 +28,9 @@ export class UserController {
     type: User,
   })
   @ApiResponse({ status: 401, description: "Unauthorized" })
-  getCurrentUser(@Request() req: RequestWithUser): Promise<User> {
+  async getCurrentUser(
+    @Request() req: RequestWithUser
+  ): Promise<Partial<User>> {
     return this.userService.findById(req.user.userId);
   }
 
@@ -51,7 +52,7 @@ export class UserController {
     status: 403,
     description: "Forbidden - Admin access required",
   })
-  findAll(): Promise<User[]> {
+  async findAll(): Promise<Partial<User>[]> {
     return this.userService.findAll();
   }
 
@@ -74,7 +75,7 @@ export class UserController {
     description: "Forbidden - Admin access required",
   })
   @ApiResponse({ status: 404, description: "User not found" })
-  findById(@Param("id") id: string): Promise<User> {
+  async findById(@Param("id") id: string): Promise<Partial<User>> {
     return this.userService.findById(id);
   }
 }
