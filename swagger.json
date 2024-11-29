@@ -346,12 +346,17 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Transaction created successfully",
+          "202": {
+            "description": "Transaction accepted for processing",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Transaction"
+                  "properties": {
+                    "jobId": {
+                      "type": "string",
+                      "example": "123e4567-e89b-12d3-a456-426614174000"
+                    }
+                  }
                 }
               }
             }
@@ -382,23 +387,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "List of all transactions",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Transaction"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden - Admin access required"
+            "description": "List of all transactions"
           }
         },
         "security": [
@@ -410,6 +399,63 @@
           }
         ],
         "summary": "Get all transactions (Admin only)",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/api/transactions/status/{jobId}": {
+      "get": {
+        "operationId": "TransactionsController_getStatus",
+        "parameters": [
+          {
+            "name": "jobId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "completed",
+                        "failed",
+                        "waiting",
+                        "active",
+                        "delayed",
+                        "paused",
+                        "not_found"
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "Transaction data if completed"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "Error message if failed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get transaction processing status",
         "tags": [
           "Transactions"
         ]
@@ -430,23 +476,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Transaction details",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Transaction"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden - Insufficient permissions"
-          },
-          "404": {
-            "description": "Transaction not found"
+            "description": "Transaction details"
           }
         },
         "security": [
@@ -540,6 +570,7 @@
             "name": "accountNumber",
             "required": true,
             "in": "query",
+            "description": "Account number to retrieve logs for",
             "schema": {
               "type": "string"
             }
@@ -563,7 +594,7 @@
             "description": "Unauthorized"
           },
           "403": {
-            "description": "Forbidden - Insufficient permissions"
+            "description": "Forbidden - Admin access required"
           },
           "404": {
             "description": "Account not found"

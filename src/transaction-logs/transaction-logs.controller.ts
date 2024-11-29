@@ -11,6 +11,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiSecurity,
+  ApiQuery,
 } from "@nestjs/swagger";
 
 @ApiTags("Transaction Logs")
@@ -54,6 +55,12 @@ export class TransactionLogsController {
       "Retrieves transaction logs for a specific account. This endpoint is restricted to administrators only.",
   })
   @ApiSecurity("admin")
+  @ApiQuery({
+    name: "accountNumber",
+    required: true,
+    type: String,
+    description: "Account number to retrieve logs for",
+  })
   @ApiResponse({
     status: 200,
     description: "List of transaction logs for the specified account",
@@ -62,7 +69,7 @@ export class TransactionLogsController {
   @ApiResponse({ status: 401, description: "Unauthorized" })
   @ApiResponse({
     status: 403,
-    description: "Forbidden - Insufficient permissions",
+    description: "Forbidden - Admin access required",
   })
   @ApiResponse({ status: 404, description: "Account not found" })
   async findByAccountNumber(

@@ -28,8 +28,20 @@ export interface AuthConfig {
   encryption: EncryptionConfig;
 }
 
+export interface TransactionConfig {
+  maxRetries: number;
+  initialRetryDelay: number;
+}
+
+export interface RedisConfig {
+  host: string;
+  port: number;
+}
+
 export interface Config {
   app: AppConfig;
   database: DatabaseConfig;
   auth: AuthConfig;
+  transaction: TransactionConfig;
+  redis: RedisConfig;
 }

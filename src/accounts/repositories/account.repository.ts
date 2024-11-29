@@ -3,6 +3,7 @@ import { Repository, DataSource } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Account } from "../entities/account.entity";
 import { LoggerService } from "../../common/logger/logger.service";
+import { DatabaseException } from "../../common/exceptions/database.exception";
 
 @Injectable()
 export class AccountRepository {
@@ -46,11 +47,6 @@ export class AccountRepository {
     return this.repository.save(account);
   }
 
-  async save(account: Account): Promise<Account> {
-    this.logger.debug(`Saving account: ${account.id}`, "AccountRepository");
-    return this.repository.save(account);
-  }
-
   async findByUserId(userId: string): Promise<Account[]> {
     this.logger.debug(
       `Finding accounts for user: ${userId}`,
@@ -71,45 +67,86 @@ export class AccountRepository {
   ): Promise<Account> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
-    await queryRunner.startTransaction();
+    await queryRunner.startTransaction("SERIALIZABLE");
 
     try {
       // Get the account with a lock
       const account = await queryRunner.manager
         .createQueryBuilder(Account, "account")
-        .where("account.id = :id", { id: accountId })
         .setLock("pessimistic_write")
+        .where("account.id = :id", { id: accountId })
         .getOne();
 
       if (!account) {
-        throw new Error("Account not found");
+        throw new DatabaseException("Account not found", "ACCOUNT_NOT_FOUND", {
+          accountId,
+        });
       }
 
-      // Update the balance
-      account.balance = isDebit
-        ? Number(account.balance) - Number(amount)
-        : Number(account.balance) + Number(amount);
+      // Calculate new balance
+      const currentBalance = Number(account.balance);
+      const transactionAmount = Number(amount);
+      const newBalance = isDebit
+        ? currentBalance - transactionAmount
+        : currentBalance + transactionAmount;
 
-      // Save the updated account
-      const savedAccount = await queryRunner.manager.save(Account, account);
+      // Update account with new balance and increment version
+      const result = await queryRunner.manager
+        .createQueryBuilder()
+        .update(Account)
+        .set({
+          balance: newBalance,
+          version: () => '"version" + 1',
+        })
+        .where("id = :id AND version = :version", {
+          id: accountId,
+          version: account.version,
+        })
+        .execute();
 
-      // Commit the transaction
+      if (result.affected === 0) {
+        throw new DatabaseException(
+          "Concurrent update detected",
+          "CONCURRENT_UPDATE",
+          { accountId }
+        );
+      }
+
+      // Get updated account
+      const updatedAccount = await queryRunner.manager
+        .createQueryBuilder(Account, "account")
+        .where("account.id = :id", { id: accountId })
+        .getOne();
+
       await queryRunner.commitTransaction();
 
       this.logger.debug(
-        `Updated balance for account ${accountId}: ${isDebit ? "debit" : "credit"} ${amount}. New balance: ${savedAccount.balance}`,
+        `Updated balance for account ${accountId}: ${isDebit ? "debit" : "credit"} ${amount}. New balance: ${updatedAccount!.balance}`,
         "AccountRepository"
       );
 
-      return savedAccount;
+      return updatedAccount!;
     } catch (error: any) {
       await queryRunner.rollbackTransaction();
+
       this.logger.error(
         `Failed to update balance for account ${accountId}: ${error.message}`,
         error.stack,
         "AccountRepository"
       );
-      throw error;
+
+      if (error instanceof DatabaseException) {
+        throw error;
+      }
+
+      throw new DatabaseException(
+        "Failed to update account balance",
+        "BALANCE_UPDATE_FAILED",
+        {
+          accountId,
+          error: error.message,
+        }
+      );
     } finally {
       await queryRunner.release();
     }
