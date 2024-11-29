@@ -3,6 +3,7 @@ import { UserRepository } from "../repositories/user.repository";
 import { User } from "../entities/user.entity";
 import { LoggerService } from "../../common/logger/logger.service";
 import { AppException } from "../../common/exceptions/app.exception";
+import { classToPlain } from "class-transformer";
 
 @Injectable()
 export class UserService {
@@ -11,7 +12,7 @@ export class UserService {
     private readonly logger: LoggerService
   ) {}
 
-  async findById(id: string): Promise<User> {
+  async findById(id: string): Promise<Partial<User>> {
     try {
       const user = await this.userRepository.findById(id);
 
@@ -19,7 +20,8 @@ export class UserService {
         throw new AppException("User not found", 404, "USER_NOT_FOUND", { id });
       }
 
-      return user;
+      // Transform the user object to exclude password
+      return classToPlain(user) as Partial<User>;
     } catch (error: any) {
       if (error instanceof AppException) {
         throw error;
@@ -40,10 +42,11 @@ export class UserService {
     }
   }
 
-  async findAll(): Promise<User[]> {
+  async findAll(): Promise<Partial<User>[]> {
     try {
       this.logger.debug("Retrieving all users", "UserService");
-      return await this.userRepository.findAll();
+      const users = await this.userRepository.findAll();
+      return users.map((user) => classToPlain(user)) as Partial<User>[];
     } catch (error: any) {
       this.logger.error(
         `Failed to retrieve users: ${error.message}`,
