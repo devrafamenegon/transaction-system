@@ -1,0 +1,821 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/accounts": {
+      "post": {
+        "operationId": "AccountsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid account data"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - Insufficient permissions"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new bank account",
+        "tags": [
+          "Accounts"
+        ]
+      }
+    },
+    "/api/accounts/{accountNumber}": {
+      "get": {
+        "operationId": "AccountsController_findByNumber",
+        "parameters": [
+          {
+            "name": "accountNumber",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - Insufficient permissions"
+          },
+          "404": {
+            "description": "Account not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get account by account number",
+        "tags": [
+          "Accounts"
+        ]
+      }
+    },
+    "/api/accounts/user/accounts": {
+      "get": {
+        "operationId": "AccountsController_findUserAccounts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of user accounts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Account"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - Insufficient permissions"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all accounts for the authenticated user",
+        "tags": [
+          "Accounts"
+        ]
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User successfully registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "access_token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        },
+        "summary": "Register a new user",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User successfully logged in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "access_token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "User login",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/transactions": {
+      "post": {
+        "operationId": "TransactionsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransactionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transaction created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid transaction data"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - Insufficient permissions"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new transaction",
+        "tags": [
+          "Transactions"
+        ]
+      },
+      "get": {
+        "description": "Retrieves all transactions in the system. This endpoint is restricted to administrators only.",
+        "operationId": "TransactionsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all transactions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - Admin access required"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "admin": []
+          }
+        ],
+        "summary": "Get all transactions (Admin only)",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/api/transactions/{id}": {
+      "get": {
+        "operationId": "TransactionsController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - Insufficient permissions"
+          },
+          "404": {
+            "description": "Transaction not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get transaction by ID",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/api/transaction-logs": {
+      "get": {
+        "description": "Query and filter transaction logs. This endpoint is restricted to administrators only.",
+        "operationId": "TransactionLogsController_queryLogs",
+        "parameters": [
+          {
+            "name": "accountNumber",
+            "required": false,
+            "in": "query",
+            "description": "Account number to filter logs",
+            "schema": {
+              "example": "1234567890",
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Start date for filtering logs (ISO format)",
+            "schema": {
+              "example": "2023-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "End date for filtering logs (ISO format)",
+            "schema": {
+              "example": "2023-12-31",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of filtered transaction logs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionLog"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - Admin access required"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "admin": []
+          }
+        ],
+        "summary": "Query transaction logs with filters (Admin only)",
+        "tags": [
+          "Transaction Logs"
+        ]
+      }
+    },
+    "/api/transaction-logs/by-account": {
+      "get": {
+        "operationId": "TransactionLogsController_findByAccountNumber",
+        "parameters": [
+          {
+            "name": "accountNumber",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of transaction logs for the specified account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionLog"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - Insufficient permissions"
+          },
+          "404": {
+            "description": "Account not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get transaction logs by account number",
+        "tags": [
+          "Transaction Logs"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Banking System API",
+    "description": "API documentation for the Banking System",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "admin": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "role"
+      }
+    },
+    "schemas": {
+      "CreateAccountDto": {
+        "type": "object",
+        "properties": {
+          "accountNumber": {
+            "type": "string",
+            "example": "1234567890",
+            "description": "Unique account number"
+          },
+          "userId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "description": "ID of the primary account holder"
+          },
+          "additionalUserIds": {
+            "example": [
+              "123e4567-e89b-12d3-a456-426614174001"
+            ],
+            "description": "IDs of additional users for shared accounts",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isSharedAccount": {
+            "type": "boolean",
+            "example": false,
+            "description": "Indicates if this is a shared account",
+            "default": false
+          }
+        },
+        "required": [
+          "accountNumber",
+          "userId"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {}
+      },
+      "Account": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "description": "The unique identifier of the account"
+          },
+          "accountNumber": {
+            "type": "string",
+            "example": "1234567890",
+            "description": "Unique account number"
+          },
+          "balance": {
+            "type": "number",
+            "example": 1000.5,
+            "description": "Current balance of the account"
+          },
+          "users": {
+            "description": "Users associated with this account",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "isSharedAccount": {
+            "type": "boolean",
+            "example": false,
+            "description": "Indicates if this is a shared account"
+          },
+          "version": {
+            "type": "number",
+            "example": 1,
+            "description": "Version number for optimistic locking"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00Z",
+            "description": "Timestamp when the account was created"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00Z",
+            "description": "Timestamp when the account was last updated"
+          }
+        },
+        "required": [
+          "id",
+          "accountNumber",
+          "balance",
+          "users",
+          "isSharedAccount",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "User email address"
+          },
+          "password": {
+            "type": "string",
+            "example": "password123",
+            "description": "User password (minimum 6 characters)",
+            "minLength": 6
+          },
+          "role": {
+            "type": "string",
+            "example": "user",
+            "description": "User role (admin or user)",
+            "enum": [
+              "admin",
+              "user"
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "role"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "User email address"
+          },
+          "password": {
+            "type": "string",
+            "example": "password123",
+            "description": "User password (minimum 6 characters)",
+            "minLength": 6
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "CreateTransactionDto": {
+        "type": "object",
+        "properties": {
+          "sourceAccountId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "description": "ID of the source account"
+          },
+          "destinationAccountId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174001",
+            "description": "ID of the destination account (required for transfers)"
+          },
+          "amount": {
+            "type": "number",
+            "example": 100.5,
+            "description": "Amount of the transaction (minimum 0.01)",
+            "minimum": 0.01
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "deposit",
+              "withdrawal",
+              "transfer"
+            ],
+            "example": "transfer",
+            "description": "Type of transaction"
+          },
+          "description": {
+            "type": "string",
+            "example": "Monthly rent payment",
+            "description": "Optional description of the transaction"
+          }
+        },
+        "required": [
+          "sourceAccountId",
+          "amount",
+          "type"
+        ]
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "description": "The unique identifier of the transaction"
+          },
+          "sourceAccount": {
+            "description": "Source account of the transaction",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Account"
+              }
+            ]
+          },
+          "destinationAccount": {
+            "description": "Destination account for transfers",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Account"
+              }
+            ]
+          },
+          "amount": {
+            "type": "number",
+            "example": 100.5,
+            "description": "Amount of the transaction"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "deposit",
+              "withdrawal",
+              "transfer"
+            ],
+            "example": "transfer",
+            "description": "Type of transaction"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00Z",
+            "description": "Timestamp when the transaction was created"
+          },
+          "description": {
+            "type": "string",
+            "example": "Monthly rent payment",
+            "description": "Optional description of the transaction"
+          }
+        },
+        "required": [
+          "id",
+          "sourceAccount",
+          "destinationAccount",
+          "amount",
+          "type",
+          "createdAt",
+          "description"
+        ]
+      },
+      "TransactionLog": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "description": "The unique identifier of the log entry"
+          },
+          "transaction": {
+            "description": "Associated transaction",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Transaction"
+              }
+            ]
+          },
+          "account": {
+            "description": "Associated account",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Account"
+              }
+            ]
+          },
+          "transactionId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "description": "ID of the associated transaction"
+          },
+          "accountId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "description": "ID of the associated account"
+          },
+          "previousBalance": {
+            "type": "number",
+            "example": 1000.5,
+            "description": "Account balance before the transaction"
+          },
+          "newBalance": {
+            "type": "number",
+            "example": 900.5,
+            "description": "Account balance after the transaction"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "success",
+              "failed"
+            ],
+            "example": "success",
+            "description": "Status of the transaction"
+          },
+          "errorMessage": {
+            "type": "string",
+            "example": "Insufficient funds",
+            "description": "Error message if the transaction failed",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00Z",
+            "description": "Timestamp when the log entry was created"
+          },
+          "metadata": {
+            "type": "string",
+            "example": "{\"transactionType\":\"transfer\",\"description\":\"Monthly rent\"}",
+            "description": "Additional metadata about the transaction",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "transaction",
+          "account",
+          "transactionId",
+          "accountId",
+          "previousBalance",
+          "newBalance",
+          "status",
+          "errorMessage",
+          "createdAt",
+          "metadata"
+        ]
+      }
+    }
+  }
+}
