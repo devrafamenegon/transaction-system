@@ -14,12 +14,14 @@ export class AccountRepository {
   async findByNumber(accountNumber: string): Promise<Account | null> {
     return this.repository.findOne({
       where: { accountNumber },
+      relations: ["users"],
     });
   }
 
   async findById(id: string): Promise<Account | null> {
     return this.repository.findOne({
       where: { id },
+      relations: ["users"],
     });
   }
 
@@ -30,6 +32,14 @@ export class AccountRepository {
 
   async save(account: Account): Promise<Account> {
     return this.repository.save(account);
+  }
+
+  async findByUserId(userId: string): Promise<Account[]> {
+    return this.repository
+      .createQueryBuilder("account")
+      .innerJoin("account.users", "user")
+      .where("user.id = :userId", { userId })
+      .getMany();
   }
 
   async updateBalance(
@@ -44,7 +54,8 @@ export class AccountRepository {
     try {
       const account = await queryRunner.manager.findOne(Account, {
         where: { id: accountId },
-        // lock: { mode: "pessimistic_write" }  TODO: activate to production
+        lock: { mode: "pessimistic_write" },
+        relations: ["users"],
       });
 
       if (!account) {
