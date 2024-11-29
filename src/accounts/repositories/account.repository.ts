@@ -74,9 +74,9 @@ export class AccountRepository {
     await queryRunner.startTransaction();
 
     try {
+      // Get the account with a lock
       const account = await queryRunner.manager
         .createQueryBuilder(Account, "account")
-        .leftJoinAndSelect("account.users", "users")
         .where("account.id = :id", { id: accountId })
         .setLock("pessimistic_write")
         .getOne();
@@ -85,14 +85,19 @@ export class AccountRepository {
         throw new Error("Account not found");
       }
 
+      // Update the balance
       account.balance = isDebit
-        ? account.balance - amount
-        : account.balance + amount;
-      const savedAccount = await queryRunner.manager.save(account);
+        ? Number(account.balance) - Number(amount)
+        : Number(account.balance) + Number(amount);
+
+      // Save the updated account
+      const savedAccount = await queryRunner.manager.save(Account, account);
+
+      // Commit the transaction
       await queryRunner.commitTransaction();
 
       this.logger.debug(
-        `Updated balance for account ${accountId}: ${isDebit ? "debit" : "credit"} ${amount}`,
+        `Updated balance for account ${accountId}: ${isDebit ? "debit" : "credit"} ${amount}. New balance: ${savedAccount.balance}`,
         "AccountRepository"
       );
 
