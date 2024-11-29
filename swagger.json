@@ -613,6 +613,28 @@
           "Transaction Logs"
         ]
       }
+    },
+    "/api/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Application health status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get application health status",
+        "tags": [
+          "Health"
+        ]
+      }
     }
   },
   "info": {
