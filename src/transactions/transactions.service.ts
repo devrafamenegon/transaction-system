@@ -48,10 +48,6 @@ export class TransactionsService {
         destinationAccount = await this.accountsService.findById(
           createTransactionDto.destinationAccountId
         );
-
-        if (!destinationAccount.id) {
-          throw new NotFoundException("Destination account not found");
-        }
       }
 
       const previousSourceBalance = sourceAccount.balance;

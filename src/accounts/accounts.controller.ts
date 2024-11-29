@@ -19,6 +19,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiSecurity,
 } from "@nestjs/swagger";
 
 @ApiTags("Accounts")
@@ -50,8 +51,13 @@ export class AccountsController {
   }
 
   @Get(":accountNumber")
-  @Roles("user", "admin")
-  @ApiOperation({ summary: "Get account by account number" })
+  @Roles("admin")
+  @ApiOperation({
+    summary: "Get account by account number (Admin only)",
+    description:
+      "Retrieves account details by account number. This endpoint is restricted to administrators only.",
+  })
+  @ApiSecurity("admin")
   @ApiResponse({
     status: 200,
     description: "Account details",

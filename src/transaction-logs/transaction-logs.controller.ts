@@ -47,8 +47,13 @@ export class TransactionLogsController {
   }
 
   @Get("by-account")
-  @Roles("user", "admin")
-  @ApiOperation({ summary: "Get transaction logs by account number" })
+  @Roles("admin")
+  @ApiOperation({
+    summary: "Get transaction logs by account number (Admin only)",
+    description:
+      "Retrieves transaction logs for a specific account. This endpoint is restricted to administrators only.",
+  })
+  @ApiSecurity("admin")
   @ApiResponse({
     status: 200,
     description: "List of transaction logs for the specified account",

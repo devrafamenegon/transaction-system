@@ -49,6 +49,7 @@
     },
     "/api/accounts/{accountNumber}": {
       "get": {
+        "description": "Retrieves account details by account number. This endpoint is restricted to administrators only.",
         "operationId": "AccountsController_findByNumber",
         "parameters": [
           {
@@ -84,9 +85,12 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "admin": []
           }
         ],
-        "summary": "Get account by account number",
+        "summary": "Get account by account number (Admin only)",
         "tags": [
           "Accounts"
         ]
@@ -205,6 +209,125 @@
         "summary": "User login",
         "tags": [
           "Authentication"
+        ]
+      }
+    },
+    "/api/users/me": {
+      "get": {
+        "operationId": "UserController_getCurrentUser",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current user profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current user profile",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users": {
+      "get": {
+        "description": "Retrieves all users in the system. This endpoint is restricted to administrators only.",
+        "operationId": "UserController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - Admin access required"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "admin": []
+          }
+        ],
+        "summary": "Get all users (Admin only)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/{id}": {
+      "get": {
+        "description": "Retrieves a specific user by their ID. This endpoint is restricted to administrators only.",
+        "operationId": "UserController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - Admin access required"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "admin": []
+          }
+        ],
+        "summary": "Get user by ID (Admin only)",
+        "tags": [
+          "Users"
         ]
       }
     },
@@ -410,6 +533,7 @@
     },
     "/api/transaction-logs/by-account": {
       "get": {
+        "description": "Retrieves transaction logs for a specific account. This endpoint is restricted to administrators only.",
         "operationId": "TransactionLogsController_findByAccountNumber",
         "parameters": [
           {
@@ -448,9 +572,12 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "admin": []
           }
         ],
-        "summary": "Get transaction logs by account number",
+        "summary": "Get transaction logs by account number (Admin only)",
         "tags": [
           "Transaction Logs"
         ]
@@ -514,10 +641,6 @@
           "userId"
         ]
       },
-      "User": {
-        "type": "object",
-        "properties": {}
-      },
       "Account": {
         "type": "object",
         "properties": {
@@ -573,6 +696,57 @@
           "users",
           "isSharedAccount",
           "version",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "description": "The unique identifier of the user"
+          },
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "User email address"
+          },
+          "role": {
+            "type": "string",
+            "example": "user",
+            "description": "User role (admin or user)",
+            "enum": [
+              "admin",
+              "user"
+            ]
+          },
+          "accounts": {
+            "description": "Accounts associated with this user",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Account"
+            }
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00Z",
+            "description": "Timestamp when the user was created"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00Z",
+            "description": "Timestamp when the user was last updated"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "role",
+          "accounts",
           "createdAt",
           "updatedAt"
         ]
