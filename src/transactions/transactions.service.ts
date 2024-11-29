@@ -11,6 +11,9 @@ import { TransactionRepository } from "./repositories/transaction.repository";
 import { AccountRepository } from "../accounts/repositories/account.repository";
 import { TransactionLogsService } from "../transaction-logs/transaction-logs.service";
 import { LogStatus } from "../transaction-logs/entities/transaction-log.entity";
+import { LoggerService } from "../common/logger/logger.service";
+import { AppError, DatabaseError } from "../common/types/error.types";
+import { AppException } from "../common/exceptions/app.exception";
 
 @Injectable()
 export class TransactionsService {
@@ -19,6 +22,7 @@ export class TransactionsService {
     private readonly accountRepository: AccountRepository,
     private readonly accountsService: AccountsService,
     private readonly transactionLogsService: TransactionLogsService,
+    private readonly logger: LoggerService,
     private readonly dataSource: DataSource
   ) {}
 
@@ -53,7 +57,11 @@ export class TransactionsService {
       const previousSourceBalance = sourceAccount.balance;
       let previousDestBalance = destinationAccount?.balance;
 
-      // Validate balance for withdrawals and transfers
+      this.logger.debug(
+        `Starting transaction: ${createTransactionDto.type} - Amount: ${createTransactionDto.amount}`,
+        "TransactionsService"
+      );
+
       if (
         (createTransactionDto.type === TransactionType.WITHDRAWAL ||
           createTransactionDto.type === TransactionType.TRANSFER) &&
@@ -62,7 +70,6 @@ export class TransactionsService {
         throw new BadRequestException("Insufficient funds");
       }
 
-      // Update balances using repository methods
       switch (createTransactionDto.type) {
         case TransactionType.DEPOSIT:
           await this.accountRepository.updateBalance(
@@ -92,7 +99,6 @@ export class TransactionsService {
           break;
       }
 
-      // Create and save transaction
       const transaction = await this.transactionRepository.create({
         sourceAccount,
         destinationAccount,
@@ -101,7 +107,6 @@ export class TransactionsService {
         description: createTransactionDto.description,
       });
 
-      // Create transaction logs
       const updatedSourceAccount = await this.accountsService.findById(
         sourceAccount.id
       );
@@ -127,48 +132,147 @@ export class TransactionsService {
       }
 
       await queryRunner.commitTransaction();
+
+      this.logger.logTransaction(transaction.id, "SUCCESS", {
+        type: transaction.type,
+        amount: transaction.amount,
+        sourceAccount: sourceAccount.accountNumber,
+        destinationAccount: destinationAccount?.accountNumber,
+      });
+
       return transaction;
-    } catch (err) {
+    } catch (error: any) {
       await queryRunner.rollbackTransaction();
 
-      // Log failed transaction
-      if (err instanceof Error) {
-        const sourceAccount = await this.accountsService.findById(
-          createTransactionDto.sourceAccountId
-        );
-        const transaction =
-          await this.transactionRepository.create(createTransactionDto);
-        await this.transactionLogsService.createLog(
-          transaction,
-          sourceAccount,
-          sourceAccount.balance,
-          sourceAccount.balance,
-          LogStatus.FAILED,
-          err.message
+      const err = error as AppError;
+
+      this.logger.error(
+        `Transaction failed: ${err.message}`,
+        err.stack,
+        "TransactionsService"
+      );
+
+      if (err instanceof BadRequestException) {
+        throw err;
+      }
+
+      if ((err as DatabaseError).code?.startsWith("23")) {
+        throw new AppException(
+          "Database constraint violation",
+          500,
+          "TRANSACTION_DB_ERROR",
+          { detail: (err as DatabaseError).detail }
         );
       }
 
-      throw err;
+      const sourceAccount = await this.accountsService.findById(
+        createTransactionDto.sourceAccountId
+      );
+      const transaction =
+        await this.transactionRepository.create(createTransactionDto);
+
+      await this.transactionLogsService.createLog(
+        transaction,
+        sourceAccount,
+        sourceAccount.balance,
+        sourceAccount.balance,
+        LogStatus.FAILED,
+        err.message
+      );
+
+      this.logger.logTransaction(transaction.id, "FAILED", {
+        error: err.message,
+        type: createTransactionDto.type,
+        amount: createTransactionDto.amount,
+        sourceAccountId: createTransactionDto.sourceAccountId,
+      });
+
+      throw new AppException(
+        "Failed to process transaction",
+        500,
+        "TRANSACTION_FAILED",
+        {
+          type: createTransactionDto.type,
+          amount: createTransactionDto.amount,
+          error: err.message,
+        }
+      );
     } finally {
       await queryRunner.release();
     }
   }
 
   async findAll(): Promise<Transaction[]> {
-    return this.transactionRepository.findAll();
+    try {
+      this.logger.debug("Retrieving all transactions", "TransactionsService");
+      return await this.transactionRepository.findAll();
+    } catch (error: any) {
+      const err = error as AppError;
+      this.logger.error(
+        `Failed to retrieve transactions: ${err.message}`,
+        err.stack,
+        "TransactionsService"
+      );
+      throw new AppException(
+        "Failed to retrieve transactions",
+        500,
+        "TRANSACTION_FETCH_ERROR"
+      );
+    }
   }
 
   async findById(id: string): Promise<Transaction> {
-    const transaction = await this.transactionRepository.findById(id);
+    try {
+      const transaction = await this.transactionRepository.findById(id);
 
-    if (!transaction) {
-      throw new NotFoundException("Transaction not found");
+      if (!transaction) {
+        this.logger.warn(`Transaction not found: ${id}`, "TransactionsService");
+        throw new NotFoundException("Transaction not found");
+      }
+
+      return transaction;
+    } catch (error: any) {
+      const err = error as AppError;
+
+      if (err instanceof NotFoundException) {
+        throw err;
+      }
+
+      this.logger.error(
+        `Failed to retrieve transaction: ${err.message}`,
+        err.stack,
+        "TransactionsService"
+      );
+
+      throw new AppException(
+        "Failed to retrieve transaction",
+        500,
+        "TRANSACTION_FETCH_ERROR",
+        { id }
+      );
     }
-
-    return transaction;
   }
 
   async findByAccountId(accountId: string): Promise<Transaction[]> {
-    return this.transactionRepository.findByAccountId(accountId);
+    try {
+      this.logger.debug(
+        `Retrieving transactions for account: ${accountId}`,
+        "TransactionsService"
+      );
+      return await this.transactionRepository.findByAccountId(accountId);
+    } catch (error: any) {
+      const err = error as AppError;
+      this.logger.error(
+        `Failed to retrieve account transactions: ${err.message}`,
+        err.stack,
+        "TransactionsService"
+      );
+      throw new AppException(
+        "Failed to retrieve account transactions",
+        500,
+        "TRANSACTION_FETCH_ERROR",
+        { accountId }
+      );
+    }
   }
 }
