@@ -38,18 +38,8 @@ export class Account {
     type: () => [User],
     description: "Users associated with this account",
   })
-  @ManyToMany(() => User)
-  @JoinTable({
-    name: "user_accounts",
-    joinColumn: {
-      name: "account_id",
-      referencedColumnName: "id",
-    },
-    inverseJoinColumn: {
-      name: "user_id",
-      referencedColumnName: "id",
-    },
-  })
+  @ManyToMany(() => User, (user) => user.accounts)
+  @JoinTable()
   users: User[];
 
   @ApiProperty({
