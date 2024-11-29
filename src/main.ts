@@ -4,6 +4,8 @@ import { ConfigService } from "@nestjs/config";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { Config } from "./common/interfaces/config.interface";
+import { writeFileSync } from "fs";
+import { join } from "path";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -25,9 +27,17 @@ async function bootstrap() {
     .setDescription("API documentation for the Banking System")
     .setVersion("1.0")
     .addBearerAuth()
+    .addApiKey({ type: "apiKey", name: "role", in: "header" }, "admin")
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
+
+  writeFileSync(
+    join(process.cwd(), "swagger.json"),
+    JSON.stringify(document, null, 2),
+    { encoding: "utf8" }
+  );
+
   SwaggerModule.setup("docs", app, document);
 
   const port = configService.get("app.port", { infer: true });
@@ -37,5 +47,8 @@ async function bootstrap() {
     `Application is running on: http://localhost:${port}/${apiPrefix}`
   );
   console.log(`Swagger documentation: http://localhost:${port}/docs`);
+  console.log(
+    `Swagger JSON file generated at: ${join(process.cwd(), "swagger.json")}`
+  );
 }
 bootstrap();
