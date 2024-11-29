@@ -1,52 +1,106 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
 import * as bcrypt from "bcrypt";
 import { User } from "./entities/user.entity";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { UserRepository } from "./repositories/user.repository";
+import { LoggerService } from "../common/logger/logger.service";
+import {
+  InvalidCredentialsException,
+  UserAlreadyExistsException,
+} from "../common/exceptions/auth.exception";
+import { AppException } from "../common/exceptions/app.exception";
+import { JwtPayload } from "../common/interfaces/jwt-payload.interface";
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly logger: LoggerService
   ) {}
 
   async register(registerDto: RegisterDto): Promise<{ access_token: string }> {
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+    try {
+      const existingUser = await this.userRepository.findByEmail(
+        registerDto.email
+      );
 
-    const user = await this.userRepository.create({
-      ...registerDto,
-      password: hashedPassword,
-    });
+      if (existingUser) {
+        throw new UserAlreadyExistsException(registerDto.email);
+      }
 
-    return this.generateToken(user);
+      const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+
+      const user = await this.userRepository.create({
+        ...registerDto,
+        password: hashedPassword,
+      });
+
+      this.logger.logAuthActivity(user.id, "Register", true);
+      return this.generateToken(user);
+    } catch (error: any) {
+      if (error instanceof UserAlreadyExistsException) {
+        throw error;
+      }
+
+      this.logger.error(
+        `Registration failed: ${error.message}`,
+        error.stack,
+        "AuthService"
+      );
+      throw new AppException(
+        "Failed to register user",
+        500,
+        "AUTH_REGISTRATION_FAILED",
+        { email: registerDto.email }
+      );
+    }
   }
 
   async login(loginDto: LoginDto): Promise<{ access_token: string }> {
-    const user = await this.userRepository.findByEmail(loginDto.email);
+    try {
+      const user = await this.userRepository.findByEmail(loginDto.email);
 
-    if (!user) {
-      throw new UnauthorizedException("Invalid credentials");
+      if (!user) {
+        this.logger.logAuthActivity(loginDto.email, "Login", false);
+        throw new InvalidCredentialsException();
+      }
+
+      const isPasswordValid = await bcrypt.compare(
+        loginDto.password,
+        user.password
+      );
+
+      if (!isPasswordValid) {
+        this.logger.logAuthActivity(user.id, "Login", false);
+        throw new InvalidCredentialsException();
+      }
+
+      this.logger.logAuthActivity(user.id, "Login", true);
+      return this.generateToken(user);
+    } catch (error: any) {
+      if (error instanceof InvalidCredentialsException) {
+        throw error;
+      }
+
+      this.logger.error(
+        `Login failed: ${error.message}`,
+        error.stack,
+        "AuthService"
+      );
+      throw new AppException(
+        "Failed to process login",
+        500,
+        "AUTH_LOGIN_FAILED",
+        { email: loginDto.email }
+      );
     }
-
-    const isPasswordValid = await bcrypt.compare(
-      loginDto.password,
-      user.password
-    );
-
-    if (!isPasswordValid) {
-      throw new UnauthorizedException("Invalid credentials");
-    }
-
-    return this.generateToken(user);
   }
 
   private generateToken(user: User): { access_token: string } {
-    const payload = {
+    const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       role: user.role,

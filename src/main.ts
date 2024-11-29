@@ -1,21 +1,46 @@
 import { NestFactory } from "@nestjs/core";
-import { ValidationPipe } from "@nestjs/common";
+import { ValidationPipe, HttpStatus } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { Config } from "./common/interfaces/config.interface";
 import { writeFileSync } from "fs";
 import { join } from "path";
+import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
+import { ErrorLoggingInterceptor } from "./common/interceptors/error-logging.interceptor";
+import { LoggerService } from "./common/logger/logger.service";
+import { BaseException } from "./common/exceptions/base.exception";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get<ConfigService<Config, true>>(ConfigService);
+  const logger = app.get(LoggerService);
+
+  // Global error handling
+  app.useGlobalFilters(new AllExceptionsFilter(logger));
+  app.useGlobalInterceptors(new ErrorLoggingInterceptor(logger));
 
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
       forbidNonWhitelisted: true,
+      exceptionFactory: (errors) => {
+        const details = errors.reduce<Record<string, string[]>>(
+          (acc, error) => {
+            acc[error.property] = Object.values(error.constraints ?? {});
+            return acc;
+          },
+          {}
+        );
+
+        return new BaseException(
+          "Validation failed",
+          HttpStatus.BAD_REQUEST,
+          "VALIDATION_ERROR",
+          details
+        );
+      },
     })
   );
 
@@ -43,12 +68,17 @@ async function bootstrap() {
   const port = configService.get("app.port", { infer: true });
   await app.listen(port);
 
-  console.log(
-    `Application is running on: http://localhost:${port}/${apiPrefix}`
+  logger.log(
+    `Application is running on: http://localhost:${port}/${apiPrefix}`,
+    "Bootstrap"
   );
-  console.log(`Swagger documentation: http://localhost:${port}/docs`);
-  console.log(
-    `Swagger JSON file generated at: ${join(process.cwd(), "swagger.json")}`
+  logger.log(
+    `Swagger documentation: http://localhost:${port}/docs`,
+    "Bootstrap"
+  );
+  logger.log(
+    `Swagger JSON file generated at: ${join(process.cwd(), "swagger.json")}`,
+    "Bootstrap"
   );
 }
 bootstrap();
