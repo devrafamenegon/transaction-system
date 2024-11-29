@@ -1,7 +1,7 @@
 import { HttpStatus } from "@nestjs/common";
-import { AppException } from "./app.exception";
+import { BaseException } from "./base.exception";
 
-export class AuthException extends AppException {
+export class AuthException extends BaseException {
   constructor(message: string, code: string, details?: Record<string, any>) {
     super(message, HttpStatus.UNAUTHORIZED, code, details);
   }
@@ -13,8 +13,10 @@ export class InvalidCredentialsException extends AuthException {
   }
 }
 
-export class UserAlreadyExistsException extends AuthException {
+export class UserAlreadyExistsException extends BaseException {
   constructor(email: string) {
-    super("User already exists", "AUTH_USER_EXISTS", { email });
+    super("User already exists", HttpStatus.CONFLICT, "AUTH_USER_EXISTS", {
+      email,
+    });
   }
 }
