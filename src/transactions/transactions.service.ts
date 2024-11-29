@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { DataSource } from "typeorm";
 import { Transaction, TransactionType } from "./entities/transaction.entity";
 import { CreateTransactionDto } from "./dto/create-transaction.dto";
@@ -14,6 +10,11 @@ import { LogStatus } from "../transaction-logs/entities/transaction-log.entity";
 import { LoggerService } from "../common/logger/logger.service";
 import { AppError, DatabaseError } from "../common/types/error.types";
 import { AppException } from "../common/exceptions/app.exception";
+import {
+  InsufficientFundsException,
+  InvalidTransactionException,
+} from "../common/exceptions/business.exception";
+import { DatabaseException } from "../common/exceptions/database.exception";
 
 @Injectable()
 export class TransactionsService {
@@ -41,8 +42,9 @@ export class TransactionsService {
 
       if (createTransactionDto.type === TransactionType.TRANSFER) {
         if (!createTransactionDto.destinationAccountId) {
-          throw new BadRequestException(
-            "Destination account is required for transfers"
+          throw new InvalidTransactionException(
+            "Destination account is required for transfers",
+            { type: TransactionType.TRANSFER }
           );
         }
         destinationAccount = await this.accountsService.findById(
@@ -63,7 +65,11 @@ export class TransactionsService {
           createTransactionDto.type === TransactionType.TRANSFER) &&
         sourceAccount.balance < createTransactionDto.amount
       ) {
-        throw new BadRequestException("Insufficient funds");
+        throw new InsufficientFundsException(
+          sourceAccount.id,
+          createTransactionDto.amount,
+          sourceAccount.balance
+        );
       }
 
       switch (createTransactionDto.type) {
@@ -137,7 +143,7 @@ export class TransactionsService {
       });
 
       return transaction;
-    } catch (error: any) {
+    } catch (error: unknown) {
       await queryRunner.rollbackTransaction();
 
       const err = error as AppError;
@@ -148,14 +154,16 @@ export class TransactionsService {
         "TransactionsService"
       );
 
-      if (err instanceof BadRequestException) {
-        throw err;
+      if (
+        error instanceof InsufficientFundsException ||
+        error instanceof InvalidTransactionException
+      ) {
+        throw error;
       }
 
       if ((err as DatabaseError).code?.startsWith("23")) {
-        throw new AppException(
-          "Database constraint violation",
-          500,
+        throw new DatabaseException(
+          "Database operation failed",
           "TRANSACTION_DB_ERROR",
           { detail: (err as DatabaseError).detail }
         );
@@ -223,15 +231,21 @@ export class TransactionsService {
 
       if (!transaction) {
         this.logger.warn(`Transaction not found: ${id}`, "TransactionsService");
-        throw new NotFoundException("Transaction not found");
+
+        throw new AppException(
+          "Transaction not found",
+          404,
+          "TRANSACTION_NOT_FOUND",
+          { id }
+        );
       }
 
       return transaction;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const err = error as AppError;
 
-      if (err instanceof NotFoundException) {
-        throw err;
+      if (error instanceof AppException) {
+        throw error;
       }
 
       this.logger.error(
