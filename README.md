@@ -2,6 +2,8 @@
 
 Um sistema robusto de transações bancárias construído com NestJS, apresentando processamento concorrente de transações, operações baseadas em fila e medidas abrangentes de segurança.
 
+> 📋 **Documentação de Testes**: Para informações detalhadas sobre os testes automatizados do sistema, consulte nossa [documentação de testes](TESTS.md).
+
 ## Funcionalidades
 
 ### Funcionalidades Bancárias Principais

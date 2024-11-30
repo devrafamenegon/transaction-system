@@ -14,6 +14,7 @@ import {
   transactionConfig,
   redisConfig,
 } from "./common/config";
+import { HealthModule } from "./health/health.module";
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import {
     TransactionsModule,
     TransactionLogsModule,
     AuthModule,
+    HealthModule,
   ],
 })
 export class AppModule {}

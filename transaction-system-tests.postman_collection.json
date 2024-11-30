@@ -1,0 +1,903 @@
+{
+	"info": {
+		"_postman_id": "9e23c814-f293-4cf7-9268-4f32460b87ee",
+		"name": "transaction-system-tests",
+		"description": "Automated tests for banking transactions",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25046404"
+	},
+	"item": [
+		{
+			"name": "Setup",
+			"item": [
+				{
+					"name": "Register Admin User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Admin registration successful\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set(\"adminToken\", response.access_token);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@test.com\",\n    \"password\": \"admin123\",\n    \"role\": \"admin\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get current user profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Admin registration successful\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    const response = pm.response.json();\r",
+									"        pm.collectionVariables.set(\"adminUserId\", response.id);\r",
+									"\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Account 123",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Account 123 created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set(\"account123\", response.id);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								},
+								{
+									"key": "undefined",
+									"type": "any"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountNumber\": \"123\",\n    \"userId\": \"{{adminUserId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/accounts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"accounts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Account 456",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Account 456 created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set(\"account456\", response.id);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								},
+								{
+									"key": "undefined",
+									"type": "any"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountNumber\": \"456\",\n    \"userId\": \"{{adminUserId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/accounts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"accounts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Account 789",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Account 789 created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set(\"account789\", response.id);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								},
+								{
+									"key": "undefined",
+									"type": "any"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountNumber\": \"789\",\n    \"userId\": \"{{adminUserId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/accounts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"accounts"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Test Scenarios",
+			"item": [
+				{
+					"name": "Scenario 1 - Deposit",
+					"item": [
+						{
+							"name": "Deposit 100 to Account 123",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Deposit transaction accepted\", function () {",
+											"    pm.response.to.have.status(201);",
+											"    const response = pm.response.json();",
+											"    pm.collectionVariables.set(\"depositJobId\", response.jobId);",
+											"});",
+											"",
+											"// Wait for transaction to complete",
+											"setTimeout(function() {",
+											"    pm.sendRequest({",
+											"        url: pm.variables.get(\"baseUrl\") + \"/api/accounts/123\",",
+											"        method: 'GET',",
+											"        header: {",
+											"            'Authorization': 'Bearer ' + pm.collectionVariables.get(\"adminToken\")",
+											"        }",
+											"    }, function (err, response) {",
+											"        pm.test(\"Account 123 balance is 100\", function () {",
+											"            const account = response.json();",
+											"            pm.expect(account.balance).to.equal('100.00');",
+											"        });",
+											"    });",
+											"}, 1000);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{adminToken}}",
+											"type": "string"
+										},
+										{
+											"key": "undefined",
+											"type": "any"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"sourceAccountId\": \"{{account123}}\",\n    \"amount\": 100,\n    \"type\": \"deposit\",\n    \"description\": \"Initial deposit\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/transactions",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"transactions"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Scenario 2 - Withdrawal",
+					"item": [
+						{
+							"name": "Withdraw 50 from Account 123",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Withdrawal transaction accepted\", function () {",
+											"    pm.response.to.have.status(201);",
+											"    const response = pm.response.json();",
+											"    pm.collectionVariables.set(\"withdrawalJobId\", response.jobId);",
+											"});",
+											"",
+											"setTimeout(function() {",
+											"    pm.sendRequest({",
+											"        url: pm.variables.get(\"baseUrl\") + \"/api/accounts/123\",",
+											"        method: 'GET',",
+											"        header: {",
+											"            'Authorization': 'Bearer ' + pm.collectionVariables.get(\"adminToken\")",
+											"        }",
+											"    }, function (err, response) {",
+											"        pm.test(\"Account 123 balance is 50\", function () {",
+											"            const account = response.json();",
+											"            pm.expect(account.balance).to.equal('50.00');",
+											"        });",
+											"    });",
+											"}, 1000);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{adminToken}}",
+											"type": "string"
+										},
+										{
+											"key": "undefined",
+											"type": "any"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"sourceAccountId\": \"{{account123}}\",\n    \"amount\": 50,\n    \"type\": \"withdrawal\",\n    \"description\": \"Withdrawal test\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/transactions",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"transactions"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Scenario 3 - Transfer",
+					"item": [
+						{
+							"name": "Transfer 30 from Account 123 to 456",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Transfer transaction accepted\", function () {",
+											"    pm.response.to.have.status(201);",
+											"    const response = pm.response.json();",
+											"    pm.collectionVariables.set(\"transferJobId\", response.jobId);",
+											"});",
+											"",
+											"setTimeout(function() {",
+											"    // Check source account",
+											"    pm.sendRequest({",
+											"        url: pm.variables.get(\"baseUrl\") + \"/api/accounts/123\",",
+											"        method: 'GET',",
+											"        header: {",
+											"            'Authorization': 'Bearer ' + pm.collectionVariables.get(\"adminToken\")",
+											"        }",
+											"    }, function (err, response) {",
+											"        pm.test(\"Account 123 balance is 20\", function () {",
+											"            const account = response.json();",
+											"            pm.expect(account.balance).to.equal('20.00');",
+											"        });",
+											"    });",
+											"",
+											"    // Check destination account",
+											"    pm.sendRequest({",
+											"        url: pm.variables.get(\"baseUrl\") + \"/api/accounts/456\",",
+											"        method: 'GET',",
+											"        header: {",
+											"            'Authorization': 'Bearer ' + pm.collectionVariables.get(\"adminToken\")",
+											"        }",
+											"    }, function (err, response) {",
+											"        pm.test(\"Account 456 balance is 30\", function () {",
+											"            const account = response.json();",
+											"            pm.expect(account.balance).to.equal('30.00');",
+											"        });",
+											"    });",
+											"}, 1000);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{adminToken}}",
+											"type": "string"
+										},
+										{
+											"key": "undefined",
+											"type": "any"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"sourceAccountId\": \"{{account123}}\",\n    \"destinationAccountId\": \"{{account456}}\",\n    \"amount\": 30,\n    \"type\": \"transfer\",\n    \"description\": \"Transfer test\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/transactions",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"transactions"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Scenario 4 - Concurrency 1",
+					"item": [
+						{
+							"name": "Concurrent Deposit and Withdrawal",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// First transaction - Deposit",
+											"pm.sendRequest({",
+											"    url: pm.variables.get(\"baseUrl\") + \"/api/transactions\",",
+											"    method: 'POST',",
+											"    header: {",
+											"        'Authorization': 'Bearer ' + pm.collectionVariables.get(\"adminToken\"),",
+											"        'Content-Type': 'application/json'",
+											"    },",
+											"    body: {",
+											"        mode: 'raw',",
+											"        raw: JSON.stringify({",
+											"            sourceAccountId: pm.collectionVariables.get(\"account123\"),",
+											"            amount: 50,",
+											"            type: 'deposit',",
+											"            description: 'Concurrent deposit'",
+											"        })",
+											"    }",
+											"});",
+											"",
+											"// Second transaction - Withdrawal",
+											"pm.sendRequest({",
+											"    url: pm.variables.get(\"baseUrl\") + \"/api/transactions\",",
+											"    method: 'POST',",
+											"    header: {",
+											"        'Authorization': 'Bearer ' + pm.collectionVariables.get(\"adminToken\"),",
+											"        'Content-Type': 'application/json'",
+											"    },",
+											"    body: {",
+											"        mode: 'raw',",
+											"        raw: JSON.stringify({",
+											"            sourceAccountId: pm.collectionVariables.get(\"account123\"),",
+											"            amount: 30,",
+											"            type: 'withdrawal',",
+											"            description: 'Concurrent withdrawal'",
+											"        })",
+											"    }",
+											"});",
+											"",
+											"// Verify final balance",
+											"setTimeout(function() {",
+											"    pm.sendRequest({",
+											"        url: pm.variables.get(\"baseUrl\") + \"/api/accounts/123\",",
+											"        method: 'GET',",
+											"        header: {",
+											"            'Authorization': 'Bearer ' + pm.collectionVariables.get(\"adminToken\")",
+											"        }",
+											"    }, function (err, response) {",
+											"        pm.test(\"Account 123 final balance is 40\", function () {",
+											"            const account = response.json();",
+											"            pm.expect(account.balance).to.equal('40.00');",
+											"        });",
+											"    });",
+											"}, 2000);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/health",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"health"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Scenario 5 - Concurrency 2",
+					"item": [
+						{
+							"name": "Concurrent Deposit and Transfer",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// First transaction - Deposit",
+											"pm.sendRequest({",
+											"    url: pm.variables.get(\"baseUrl\") + \"/api/transactions\",",
+											"    method: 'POST',",
+											"    header: {",
+											"        'Authorization': 'Bearer ' + pm.collectionVariables.get(\"adminToken\"),",
+											"        'Content-Type': 'application/json'",
+											"    },",
+											"    body: {",
+											"        mode: 'raw',",
+											"        raw: JSON.stringify({",
+											"            sourceAccountId: pm.collectionVariables.get(\"account123\"),",
+											"            amount: 100,",
+											"            type: 'deposit',",
+											"            description: 'Concurrent deposit'",
+											"        })",
+											"    }",
+											"});",
+											"",
+											"// Second transaction - Transfer",
+											"pm.sendRequest({",
+											"    url: pm.variables.get(\"baseUrl\") + \"/api/transactions\",",
+											"    method: 'POST',",
+											"    header: {",
+											"        'Authorization': 'Bearer ' + pm.collectionVariables.get(\"adminToken\"),",
+											"        'Content-Type': 'application/json'",
+											"    },",
+											"    body: {",
+											"        mode: 'raw',",
+											"        raw: JSON.stringify({",
+											"            sourceAccountId: pm.collectionVariables.get(\"account123\"),",
+											"            destinationAccountId: pm.collectionVariables.get(\"account456\"),",
+											"            amount: 50.00,",
+											"            type: 'transfer',",
+											"            description: 'Concurrent transfer'",
+											"        })",
+											"    }",
+											"});",
+											"",
+											"// Verify final balances",
+											"setTimeout(function() {",
+											"    // Check source account",
+											"    pm.sendRequest({",
+											"        url: pm.variables.get(\"baseUrl\") + \"/api/accounts/123\",",
+											"        method: 'GET',",
+											"        header: {",
+											"            'Authorization': 'Bearer ' + pm.collectionVariables.get(\"adminToken\")",
+											"        }",
+											"    }, function (err, response) {",
+											"        pm.test(\"Account 123 final balance is 90\", function () {",
+											"            const account = response.json();",
+											"            pm.expect(account.balance).to.equal('90.00');",
+											"        });",
+											"    });",
+											"",
+											"    // Check destination account",
+											"    pm.sendRequest({",
+											"        url: pm.variables.get(\"baseUrl\") + \"/api/accounts/456\",",
+											"        method: 'GET',",
+											"        header: {",
+											"            'Authorization': 'Bearer ' + pm.collectionVariables.get(\"adminToken\")",
+											"        }",
+											"    }, function (err, response) {",
+											"        pm.test(\"Account 456 final balance is 80\", function () {",
+											"            const account = response.json();",
+											"            pm.expect(account.balance).to.equal('80.00');",
+											"        });",
+											"    });",
+											"}, 2000);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/health",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"health"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Scenario 6 - Concurrency 3",
+					"item": [
+						{
+							"name": "Concurrent Transfers",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// First transfer",
+											"pm.sendRequest({",
+											"    url: pm.variables.get(\"baseUrl\") + \"/api/transactions\",",
+											"    method: 'POST',",
+											"    header: {",
+											"        'Authorization': 'Bearer ' + pm.collectionVariables.get(\"adminToken\"),",
+											"        'Content-Type': 'application/json'",
+											"    },",
+											"    body: {",
+											"        mode: 'raw',",
+											"        raw: JSON.stringify({",
+											"            sourceAccountId: pm.collectionVariables.get(\"account123\"),",
+											"            destinationAccountId: pm.collectionVariables.get(\"account456\"),",
+											"            amount: 20,",
+											"            type: 'transfer',",
+											"            description: 'First concurrent transfer'",
+											"        })",
+											"    }",
+											"});",
+											"",
+											"// Second transfer",
+											"pm.sendRequest({",
+											"    url: pm.variables.get(\"baseUrl\") + \"/api/transactions\",",
+											"    method: 'POST',",
+											"    header: {",
+											"        'Authorization': 'Bearer ' + pm.collectionVariables.get(\"adminToken\"),",
+											"        'Content-Type': 'application/json'",
+											"    },",
+											"    body: {",
+											"        mode: 'raw',",
+											"        raw: JSON.stringify({",
+											"            sourceAccountId: pm.collectionVariables.get(\"account456\"),",
+											"            destinationAccountId: pm.collectionVariables.get(\"account789\"),",
+											"            amount: 10,",
+											"            type: 'transfer',",
+											"            description: 'Second concurrent transfer'",
+											"        })",
+											"    }",
+											"});",
+											"",
+											"// Verify final balances",
+											"setTimeout(function() {",
+											"    // Check account 123",
+											"    pm.sendRequest({",
+											"        url: pm.variables.get(\"baseUrl\") + \"/api/accounts/123\",",
+											"        method: 'GET',",
+											"        header: {",
+											"            'Authorization': 'Bearer ' + pm.collectionVariables.get(\"adminToken\")",
+											"        }",
+											"    }, function (err, response) {",
+											"        pm.test(\"Account 123 final balance is 70\", function () {",
+											"            const account = response.json();",
+											"            pm.expect(account.balance).to.equal('70.00');",
+											"        });",
+											"    });",
+											"",
+											"    // Check account 456",
+											"    pm.sendRequest({",
+											"        url: pm.variables.get(\"baseUrl\") + \"/api/accounts/456\",",
+											"        method: 'GET',",
+											"        header: {",
+											"            'Authorization': 'Bearer ' + pm.collectionVariables.get(\"adminToken\")",
+											"        }",
+											"    }, function (err, response) {",
+											"        pm.test(\"Account 456 final balance is 90\", function () {",
+											"            const account = response.json();",
+											"            pm.expect(account.balance).to.equal('90.00');",
+											"        });",
+											"    });",
+											"",
+											"    // Check account 789",
+											"    pm.sendRequest({",
+											"        url: pm.variables.get(\"baseUrl\") + \"/api/accounts/789\",",
+											"        method: 'GET',",
+											"        header: {",
+											"            'Authorization': 'Bearer ' + pm.collectionVariables.get(\"adminToken\")",
+											"        }",
+											"    }, function (err, response) {",
+											"        pm.test(\"Account 789 final balance is 10\", function () {",
+											"            const account = response.json();",
+											"            pm.expect(account.balance).to.equal('10.00');",
+											"        });",
+											"    });",
+											"}, 2000);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/health",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"health"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000"
+		},
+		{
+			"key": "account123",
+			"value": ""
+		},
+		{
+			"key": "account456",
+			"value": ""
+		},
+		{
+			"key": "account789",
+			"value": ""
+		},
+		{
+			"key": "adminToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "adminUserId",
+			"value": ""
+		},
+		{
+			"key": "depositJobId",
+			"value": ""
+		},
+		{
+			"key": "withdrawalJobId",
+			"value": ""
+		},
+		{
+			"key": "transferJobId",
+			"value": ""
+		}
+	]
+}
