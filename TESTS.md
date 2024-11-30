@@ -1,5 +1,7 @@
 # Sistema Bancário - Testes Automatizados no Postman
 
+![Postman Tests](./docs/images/postman-tests.png)
+
 ## Pré-requisitos
 
 - Docker e Docker Compose instalados
