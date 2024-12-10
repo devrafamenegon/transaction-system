@@ -3,7 +3,7 @@ import { Transaction } from "./entities/transaction.entity";
 import { CreateTransactionDto } from "./dto/create-transaction.dto";
 import { TransactionRepository } from "./repositories/transaction.repository";
 import { LoggerService } from "../common/logger/logger.service";
-import { AppException } from "../common/exceptions/app.exception";
+import { BaseException } from "../common/exceptions/base.exception";
 import { TransactionQueue } from "./queues/transaction.queue";
 import {
   QueueJobResponse,
@@ -50,7 +50,7 @@ export class TransactionsService {
     const transaction = await this.transactionRepository.findById(id);
 
     if (!transaction) {
-      throw new AppException(
+      throw new BaseException(
         "Transaction not found",
         404,
         "TRANSACTION_NOT_FOUND",
