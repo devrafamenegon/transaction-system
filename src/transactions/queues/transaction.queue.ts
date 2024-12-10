@@ -25,16 +25,7 @@ export class TransactionQueue {
 
     const job = await this.transactionsQueue.add(
       "process-transaction",
-      transactionDto,
-      {
-        attempts: 3,
-        backoff: {
-          type: "exponential",
-          delay: 1000,
-        },
-        removeOnComplete: true,
-        removeOnFail: false,
-      }
+      transactionDto
     );
 
     this.logger.debug(

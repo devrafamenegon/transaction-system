@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { BullModule } from "@nestjs/bull";
+import { BullModule, BullModuleOptions } from "@nestjs/bull";
 import { TransactionsController } from "./transactions.controller";
 import { TransactionsService } from "./transactions.service";
 import { TransactionRepository } from "./repositories/transaction.repository";
@@ -12,21 +12,34 @@ import { TransactionValidatorService } from "./services/transaction-validator.se
 import { LoggerModule } from "../common/logger/logger.module";
 import { TransactionQueue } from "./queues/transaction.queue";
 import { TransactionProcessor } from "./processors/transaction.processor";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Transaction]),
-    BullModule.registerQueue({
+    BullModule.registerQueueAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
       name: "transactions",
-      defaultJobOptions: {
-        attempts: 3,
-        backoff: {
-          type: "exponential",
-          delay: 1000,
+      useFactory: (configService: ConfigService): BullModuleOptions => ({
+        defaultJobOptions: {
+          attempts: configService.get("queue.attempts", {
+            infer: true,
+          }),
+          backoff: {
+            type: "exponential",
+            delay: configService.get("queue.backoffDelay", {
+              infer: true,
+            }),
+          },
+          removeOnComplete: configService.get("queue.removeOnComplete", {
+            infer: true,
+          }),
+          removeOnFail: configService.get("queue.removeOnFail", {
+            infer: true,
+          }),
         },
-        removeOnComplete: true,
-        removeOnFail: false,
-      },
+      }),
     }),
     AccountsModule,
     TransactionLogsModule,
