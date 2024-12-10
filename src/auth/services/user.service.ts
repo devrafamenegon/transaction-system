@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { UserRepository } from "../repositories/user.repository";
 import { User } from "../entities/user.entity";
 import { LoggerService } from "../../common/logger/logger.service";
-import { AppException } from "../../common/exceptions/app.exception";
+import { BaseException } from "../../common/exceptions/base.exception";
 import { classToPlain } from "class-transformer";
 
 @Injectable()
@@ -17,13 +17,15 @@ export class UserService {
       const user = await this.userRepository.findById(id);
 
       if (!user) {
-        throw new AppException("User not found", 404, "USER_NOT_FOUND", { id });
+        throw new BaseException("User not found", 404, "USER_NOT_FOUND", {
+          id,
+        });
       }
 
       // Transform the user object to exclude password
       return classToPlain(user) as Partial<User>;
     } catch (error: any) {
-      if (error instanceof AppException) {
+      if (error instanceof BaseException) {
         throw error;
       }
 
@@ -33,7 +35,7 @@ export class UserService {
         "UserService"
       );
 
-      throw new AppException(
+      throw new BaseException(
         "Failed to retrieve user",
         500,
         "USER_FETCH_ERROR",
@@ -53,7 +55,7 @@ export class UserService {
         error.stack,
         "UserService"
       );
-      throw new AppException(
+      throw new BaseException(
         "Failed to retrieve users",
         500,
         "USERS_FETCH_ERROR"

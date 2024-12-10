@@ -7,7 +7,7 @@ import {
   TransactionType,
 } from "../../../src/transactions/entities/transaction.entity";
 import { CreateTransactionDto } from "../../../src/transactions/dto/create-transaction.dto";
-import { AppException } from "../../../src/common/exceptions/app.exception";
+import { BaseException } from "../../../src/common/exceptions/base.exception";
 import { JobStatus } from "../../../src/transactions/interfaces/queue-response.interface";
 import { TransactionQueue } from "../../../src/transactions/queues/transaction.queue";
 
@@ -149,10 +149,10 @@ describe("TransactionsService", () => {
       expect(transactionRepository.findById).toHaveBeenCalledWith("456");
     });
 
-    it("should throw AppException when transaction not found", async () => {
+    it("should throw BaseException when transaction not found", async () => {
       transactionRepository.findById.mockResolvedValue(null);
 
-      await expect(service.findById("456")).rejects.toThrow(AppException);
+      await expect(service.findById("456")).rejects.toThrow(BaseException);
     });
   });
 });

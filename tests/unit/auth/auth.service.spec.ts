@@ -7,11 +7,8 @@ import { User } from "../../../src/auth/entities/user.entity";
 import { RegisterDto } from "../../../src/auth/dto/register.dto";
 import { LoginDto } from "../../../src/auth/dto/login.dto";
 import * as bcrypt from "bcrypt";
-import {
-  UserAlreadyExistsException,
-  InvalidCredentialsException,
-} from "../../../src/common/exceptions/auth.exception";
-import { AppException } from "../../../src/common/exceptions/app.exception";
+import { InvalidCredentialsException } from "../../../src/common/exceptions/auth.exception";
+import { BaseException } from "../../../src/common/exceptions/base.exception";
 
 jest.mock("bcrypt");
 
@@ -92,10 +89,12 @@ describe("AuthService", () => {
       );
     });
 
-    it("should throw AppException if email exists", async () => {
+    it("should throw BaseException if email exists", async () => {
       userRepository.findByEmail.mockResolvedValue(mockUser);
 
-      await expect(service.register(registerDto)).rejects.toThrow(AppException);
+      await expect(service.register(registerDto)).rejects.toThrow(
+        BaseException
+      );
       expect(userRepository.create).not.toHaveBeenCalled();
     });
   });

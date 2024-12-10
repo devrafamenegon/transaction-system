@@ -10,8 +10,8 @@ import {
   InvalidCredentialsException,
   UserAlreadyExistsException,
 } from "../common/exceptions/auth.exception";
-import { AppException } from "../common/exceptions/app.exception";
 import { JwtPayload } from "../common/interfaces/jwt-payload.interface";
+import { BaseException } from "../common/exceptions/base.exception";
 
 @Injectable()
 export class AuthService {
@@ -54,7 +54,7 @@ export class AuthService {
         error.stack,
         "AuthService"
       );
-      throw new AppException(
+      throw new BaseException(
         "Failed to register user",
         500,
         "AUTH_REGISTRATION_FAILED",
@@ -94,7 +94,7 @@ export class AuthService {
         error.stack,
         "AuthService"
       );
-      throw new AppException(
+      throw new BaseException(
         "Failed to process login",
         500,
         "AUTH_LOGIN_FAILED",
