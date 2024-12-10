@@ -70,10 +70,9 @@ export class AccountRepository {
     await queryRunner.startTransaction("SERIALIZABLE");
 
     try {
-      // Get the account with a lock
+      // Get the account
       const account = await queryRunner.manager
         .createQueryBuilder(Account, "account")
-        .setLock("pessimistic_write")
         .where("account.id = :id", { id: accountId })
         .getOne();
 
@@ -90,27 +89,13 @@ export class AccountRepository {
         ? currentBalance - transactionAmount
         : currentBalance + transactionAmount;
 
-      // Update account with new balance and increment version
-      const result = await queryRunner.manager
+      // Update balance
+      await queryRunner.manager
         .createQueryBuilder()
         .update(Account)
-        .set({
-          balance: newBalance,
-          version: () => '"version" + 1',
-        })
-        .where("id = :id AND version = :version", {
-          id: accountId,
-          version: account.version,
-        })
+        .set({ balance: newBalance })
+        .where("id = :id", { id: accountId })
         .execute();
-
-      if (result.affected === 0) {
-        throw new DatabaseException(
-          "Concurrent update detected",
-          "CONCURRENT_UPDATE",
-          { accountId }
-        );
-      }
 
       // Get updated account
       const updatedAccount = await queryRunner.manager
