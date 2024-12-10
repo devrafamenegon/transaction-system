@@ -15,6 +15,12 @@ import {
   redisConfig,
 } from "./common/config";
 import { HealthModule } from "./health/health.module";
+import {
+  ThrottlerGuard,
+  ThrottlerModule,
+  ThrottlerModuleOptions,
+} from "@nestjs/throttler";
+import { APP_GUARD } from "@nestjs/core";
 
 @Module({
   imports: [
@@ -28,6 +34,18 @@ import { HealthModule } from "./health/health.module";
         redisConfig,
       ],
       envFilePath: process.env.NODE_ENV === "test" ? ".env.test" : ".env",
+    }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService): ThrottlerModuleOptions => ({
+        throttlers: [
+          {
+            ttl: config.get<number>("app.rateLimitWindow", { infer: true }),
+            limit: config.get<number>("app.rateLimitMax", { infer: true }),
+          },
+        ],
+      }),
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -63,6 +81,12 @@ import { HealthModule } from "./health/health.module";
     TransactionLogsModule,
     AuthModule,
     HealthModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

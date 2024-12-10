@@ -1,4 +1,4 @@
-import { NestFactory } from "@nestjs/core";
+import { NestFactory, Reflector } from "@nestjs/core";
 import { ValidationPipe, HttpStatus } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
@@ -16,10 +16,15 @@ async function bootstrap() {
   const configService = app.get<ConfigService<Config, true>>(ConfigService);
   const logger = app.get(LoggerService);
 
+  // Configure CORS
+  const corsConfig = configService.get("cors", { infer: true });
+  app.enableCors(corsConfig);
+
   // Global error handling
   app.useGlobalFilters(new AllExceptionsFilter(logger));
   app.useGlobalInterceptors(new ErrorLoggingInterceptor(logger));
 
+  // Global data validation
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -44,9 +49,11 @@ async function bootstrap() {
     })
   );
 
+  // Global prefix
   const apiPrefix = configService.get("app.apiPrefix", { infer: true });
   app.setGlobalPrefix(apiPrefix);
 
+  // Setup documentation
   const config = new DocumentBuilder()
     .setTitle("Banking System API")
     .setDescription("API documentation for the Banking System")
@@ -63,6 +70,7 @@ async function bootstrap() {
     { encoding: "utf8" }
   );
 
+  // Publish documentation indo /docs
   SwaggerModule.setup("docs", app, document);
 
   const port = configService.get("app.port", { infer: true });
