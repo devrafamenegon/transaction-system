@@ -17,7 +17,6 @@ Um sistema robusto de transações bancárias construído com NestJS, apresentan
 
 - Processamento de Transações baseado em Fila com Bull
 - Tratamento de Transações Concorrentes
-- Bloqueio Otimista e Pessimista
 - Mecanismo Automático de Retentativa de Transações
 - Tratamento Abrangente de Erros
 - Registro Detalhado de Transações
@@ -184,7 +183,7 @@ npm run test:cov
 - account_number (único)
 - balance
 - is_shared_account
-- version (para bloqueio otimista)
+- version
 - created_at
 - updated_at
 
@@ -234,6 +233,5 @@ A aplicação utiliza a fila Bull para manipular transações:
    - Sanitização de entrada
 
 3. **Segurança de Transações**
-   - Bloqueio pessimista para atualizações de saldo
    - Isolamento de transações
    - Rollback automático em caso de falha
