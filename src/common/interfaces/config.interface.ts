@@ -38,10 +38,27 @@ export interface RedisConfig {
   port: number;
 }
 
+export interface CorsConfig {
+  origin: string[];
+  methods: string[];
+  allowedHeaders: string[];
+  exposedHeaders: string[];
+  credentials: boolean;
+  maxAge: number;
+}
+
+export interface QueueConfig {
+  attempts: number;
+  backoffDelay: number;
+  removeOnComplete: boolean;
+  removeOnFail: boolean;
+}
+
 export interface Config {
   app: AppConfig;
   database: DatabaseConfig;
   auth: AuthConfig;
   transaction: TransactionConfig;
   redis: RedisConfig;
+  cors: CorsConfig;
 }

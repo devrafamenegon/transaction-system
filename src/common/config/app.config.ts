@@ -6,7 +6,7 @@ export default registerAs(
   (): AppConfig => ({
     port: parseInt(process.env.PORT ?? "3000", 10),
     apiPrefix: process.env.API_PREFIX ?? "api",
-    rateLimitWindow: parseInt(process.env.RATE_LIMIT_WINDOW ?? "15", 10),
+    rateLimitWindow: parseInt(process.env.RATE_LIMIT_WINDOW ?? "60000", 10),
     rateLimitMax: parseInt(process.env.RATE_LIMIT_MAX ?? "100", 10),
   })
 );
